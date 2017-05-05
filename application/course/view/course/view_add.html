@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>添加课程</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <style>
+    .textarea_div {
+      height: 132px;
+    }
+    
+    .textarea_div div {
+      height: inherit;
+    }
+    
+    .textarea_div form {
+      height: inherit;
+    }
+    
+    .textarea_div div textarea {
+      height: inherit;
+    }
+    
+    .flexbox {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+    
+    .table-background {
+      background-color: rgb(255, 255, 255);
+      border-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border-bottom-left-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1>
+          创建课程
+        </h1>
+        <p>填写一下资料，创建新的课程。</p>
+      </div>
+    </div>
+  </div>
+  <div class="row clearfix right">
+    <div class="column col-md-7">
+      <div class="col-md-12 column">
+        <form class="form-horizontal flexbox" role="form">
+          <label class="control-label">课程名称</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="className"/>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-12 textarea_div" role="form" style="margin-top: 10px">
+        <form class="form-horizontal" role="form">
+          <label class="control-label">课程介绍</label>
+          <div class="col-sm-10 ">
+            <textarea id="introduce" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="column col-md-5 ">
+      <table class="table table-striped  table-hover table-background" style="color: #383838">
+        <thead>
+        <tr>
+          <th>编号</th>
+          <th>学生名称</th>
+          <th>手机</th>
+          <th>是否选择添加</th>
+        </tr>
+        </thead>
+        <tbody id="tableStu">
+        
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row clearfix right margin-top">
+    <div class="col-md-12 column " style="margin-top: 10px">
+      <button
+        type="button"
+        class="btn btn-success btn-lg btn-diylg center-block"
+        id="sublimt"
+        onclick="createCourse()">创建课程
+      </button>
+    </div>
+  </div>
+</div>
+
+<!--TODO:加载学生-->
+<script>
+  $.ajax({
+    url: "{:url('Course/loadAllStudents')}",
+    type: 'POST',
+    dataType: 'json',
+    success: (res) => {
+      res = eval(res);
+      for (let i = 0; i < res.length; i++) {
+        $("#tableStu").append('\
+           <tr>\
+            <td>' + res[i].userid + '</td>\
+            <td>' + res[i].username + '</td>\
+            <td>' + res[i].telephone + '</td>\
+            <td style="text-align: center">\
+              <input type="checkbox" value="' + res[i].userid + '" name="chb-student" >\
+            </td>>\
+          </tr>\
+          ');
+      }
+    }
+  });
+</script>
+
+<!--TODO:创建课程-->
+<script>
+  function createCourse() {
+    let addStudentsId = [];
+    const chbStu = document.getElementsByName("chb-student");
+    for (i in chbStu) {
+      if (chbStu[i].checked)
+        addStudentsId.push(chbStu[i].value);
+    }
+
+    const formData=new FormData;
+    formData.append("teacherId",window.localStorage.getItem("userid"));
+    formData.append("className",$("#className")[0].value);
+    formData.append("introduce",$("#introduce")[0].value);
+    formData.append("studentsId",addStudentsId);
+//    alert( $("#className")[0].value+"||"+$("#introduce")[0].value);
+    $.ajax({
+      url: "{:url('course/createCourse')}",
+      type: "POST",
+      dataType: "json",
+      data:formData,
+//      data: {
+//        teacherId: window.localStorage.getItem("userid"),
+//        className: $("#className")[0].value,
+//        introduce: $("#introduce")[0].value,
+//        studentsId: addStudentsId
+//      },
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: (res) => {
+        alert(res);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

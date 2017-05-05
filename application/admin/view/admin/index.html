@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+  <title>作业管理系统</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <link href="__CSS__\index.css" rel="stylesheet">
+  <link href="__icomoon__\style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrap">
+  
+  <p id="welcome_p">欢迎进入</br>这是一个作业管理系统</br></p>
+  
+  <iframe id="show" width="100%" height="100%" frameborder="0" src=""></iframe>
+
+</div>
+<div class="nav-main">
+  <div class="nav-box">
+    <div class="index_nav">
+      <ul class="nav-ul">
+        <li><a id="modal" data-target="#modal-login" role="button" data-toggle="modal"><span>登录</span></a>
+        </li>
+        <li><a href="#" class="develop"><span>课程管理</span></a></li>
+        <li><a href="#" class="wechat"><span>作业管理</span></a></li>
+      </ul>
+    </div>
+    <div class="nav-slide">
+      <div class="nav-slide-o" id="login-nav-slide"></div>
+      <div class="nav-slide-o">
+        <ul id="course_ul">
+          <li id="btn_Querycourse"><a href="#"><span>我的课程</span></a></li>
+          <li class="teacher_li" id="btn_add_course"><a href="#"><span>创建课程</span></a></li>
+        </ul>
+      </div>
+      <div class="nav-slide-o">
+        <ul id="work_ul">
+          <li id="btn-query-work"><a href="#"><span>我的作业</span></a></li>
+          <li class="teacher_li" id="btn-add-work"><a href="#"><span>布置作业</span></a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:登录modal-->
+<div class="container login">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="modal fade" id="modal-login" role="dialog" aria-labelledby="myModalLabel"
+           aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h4 class="model-title" id="myModalLabel">
+                登录界面
+              </h4>
+            </div>
+            <div class="modal-body">
+              <div class="row clearfix">
+                <div class="col-md-12 column">
+                  <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                      <label for="input_Tel" class="col-sm-2 control-label">Tel</label>
+                      <div class="col-sm-10">
+                        <input type="tel" class="form-control" id="input_Tel" maxlength="11"/>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="input_Password" class="col-sm-2 control-label">Password</label>
+                      <div class="col-sm-10">
+                        <input type="password" class="form-control" id="input_Password"/>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <div class="col-sm-offset-2 col-sm-10">
+                        <div class="checkbox">
+                          <label><input type="checkbox" id="chb_Remember"/>Remember me</label>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_register">注册
+              </button>
+              <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+              <button type="button" class="btn btn-success" data-dismiss="modal" id="btn_login">登录
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:修改用户信息modal -->
+<div class="modal fade" id="modal-update" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="model-title" id="update-modal-label">
+          修改用户信息
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="row clearfix">
+          <div class="col-md-12 column">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="update-name" class="col-sm-2 control-label">name</label>
+                <div class="col-sm-10">
+                  <input type="tel" class="form-control" id="update-name"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="update-tel" class="col-sm-2 control-label">Tel
+                  <span class="icon-checkmark fade" id="tick-update"></span>
+                </label>
+                <div class="col-sm-10">
+                  <input type="tel" class="form-control" id="update-tel" maxlength="11"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="update-pwd" class="col-sm-2 control-label">Password</label>
+                <div class="col-sm-10">
+                  <input type="password" class="form-control" id="update-pwd"/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-success" data-dismiss="modal" id="btn-update" onclick="btnUpdate()">
+          修改用户信息
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:修改密码modal -->
+<div class="modal fade" id="modal-pwd" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="model-title" id="pwd-modal-label">
+          修改密码
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="row clearfix">
+          <div class="col-md-12 column">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="input_Tel" class="col-sm-3 control-label">
+                  <span class="icon-checkmark fade" class="tick-pwd"></span>
+                  新密码
+                </label>
+                <div class="col-sm-9">
+                  <input type="password" class="form-control" id="pwd-update-1"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input_Password" class="col-sm-3 control-label">
+                  <span class="icon-checkmark fade" class="tick-pwd"></span>重新输入
+                </label>
+                <div class="col-sm-9">
+                  <input type="password" class="form-control" id="pwd-update-2"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="input_Password" class="col-sm-3 control-label">旧密码</label>
+                <div class="col-sm-9">
+                  <input type="password" class="form-control" id="pwd-update-ex"/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-success" id="btn-pwd" onclick="updatePwd()">修改密码</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--<script type="text/javascript" src="../../../../front/js/jquery-3.1.1.js"></script>-->
+<!--<script type="text/javascript" src="../../../../public/front_end/js/index.js"></script>-->
+<!--<script src="../../../../public/front_end/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>-->
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+<script type="text/javascript" src="__JS__\index.js"></script> <!--包括导航栏功能-->
+
+<!--TODO:登录功能-->
+<script>
+  this.onload = () => {
+    if (localStorage.userid && localStorage.password && localStorage.identity && localStorage.telphone) {
+      login(localStorage.getItem("telphone"), localStorage.getItem("password"));
+    }
+  }
+
+  let UserName = "";
+  let UserID = "";
+  let Identity = "";
+  let Telephone = "";
+  let Userpassword = "";
+
+  $('#btn_login').click(function () {
+    login($('#input_Tel')[0].value, $('#input_Password')[0].value);
+  });
+  function login(Tel, password) {
+    $.ajax({
+      url: "{:url('Admin/queryuserbytel')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {Telephone: Tel, password: password},
+      success: function (res) {
+        var result = eval(res);
+        console.log(result);
+        UserID = result.userid;
+        UserName = result.username;
+        Identity = result.identity;
+        Telephone = result.telephone;
+        Userpassword = result.password;
+        if (password != Userpassword) {
+          console.log("input_password:" + password);
+          console.log("password:" + Userpassword);
+          console.log("登录失败,密码错误");
+        } else {
+          afterloginchange(Identity, UserName);
+          window.localStorage.setItem('userid', UserID);
+          window.localStorage.setItem('identity', Identity);
+          window.localStorage.setItem("telphone", Telephone);
+          window.localStorage.setItem("password", result.password);
+
+        }
+      }
+    });
+  }
+
+  function querywork_stu(studentid) {
+    var list_work;
+    $.ajax({
+      url: "{:url('Admin/querywork_stu')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {studentid: studentid},
+      async: false,
+      success: function (res) {
+        list_work = eval(res);
+        console.log(list_work);
+        for (var i = 0; i < list_work.length; i++) {
+          $("#work_ul").append("\
+            <li>\
+              <a \
+                value='" + list_work[i][0].workid + "'\
+                onclick='jumpTodo(" + list_work[i][0].workid + ",1,0)'\
+                ><span>" + list_work[i][0].workname + "</span></a>\
+            </li>\
+            ");
+        }
+      }
+
+    });
+
+  }
+
+  function querywork_tea(teacherid) {
+    var list_work;
+    $.ajax({
+      url: "{:url('Admin/querywork_tea')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {teacherid: teacherid},
+      async: false,
+      success: function (res) {
+        list_work = eval(res);
+//                alert(list_work.toString());
+        for (var i = 0; i < list_work.length; i++) {
+          $("#work_ul").append("\
+            <li\
+              value='" + list_work[i].workid + "'\
+              onclick='jumpTodo(" + list_work[i].workid + ",1,1)'\
+              ><a href='#'><span>" + list_work[i].workname + "</span></a>\
+            </li>\
+            ");
+        }
+      }
+
+    });
+  }
+
+  function afterloginchange(Identity, UserName) {
+    //学生登录成功
+    if (Identity == "学生") {
+      $('#modal').removeAttr('data-target').children('span').html(UserName);
+//                        .removeAttr('data-target')
+      $('#welcome_p').html('欢迎' + UserName + '同学</br>这是一个作业管理系统</br>');
+      $('#welcome_p').show();
+      $('.teacher_li').hide();
+      $('#show').hide();
+
+      querywork_stu(UserID);
+    }
+    //教师登陆成功
+    if (Identity == "教师") {
+      $('#modal').removeAttr('data-target').children('span').html(UserName);
+      $('#welcome_p').html('欢迎' + UserName + '老师</br>这是一个作业管理系统</br>');
+      $('.student_li').hide();
+      $('#show').hide();
+      $('#welcome_p').show();
+
+      querywork_tea(UserID);
+    } else {
+    }
+
+    $("#login-nav-slide").append('\
+    <ul>\
+      <li data-target="#modal-update" role="button" data-toggle="modal"><a><span>修改用户信息</span></a></li>\
+      <li data-target="#modal-pwd" role="button" data-toggle="modal"><a><span>修改密码</span></a></li>\
+      <li onclick="logout()"><a href="#"><span>注销</span></a></li>\
+    </ul>\
+    ');
+  }
+
+  function logout() {
+    window.localStorage.clear();
+    location.reload();
+  }
+</script>
+
+<!--TODO:修改用户信息与修改密码-->
+<script>
+  function btnUpdate() {
+    let name = $("#update-name")[0].value;
+    let tele = $("#update-tel")[0].value;
+    let pwd = $("#update-pwd")[0].value
+    if (name !== "" || tele !== "") {
+      if (pwd !== "") {
+        $.ajax({
+          url: "{:url('Admin/updateAdminInfo')}",
+          type: 'POST',
+          dataType: 'json',
+          data: {
+            userId: window.localStorage.getItem("userid"),
+            name: name,
+            telephone: tele,
+            password: pwd
+          },
+          success: (res) => {
+            res = eval(res);
+            alert(res.message);
+            $('#modal').children('span').html(res.name);
+          }
+        })
+      } else {
+        alert("请输入密码。")
+      }
+    } else {
+      alert("请输入需要更改的用户信息。")
+    }
+  }
+
+
+  function updatePwd() {
+    const pwd1 = $("#pwd-update-1")[0].value;
+    const pwd2 = $("#pwd-update-2")[0].value;
+    const pwdEx = $("#pwd-update-ex")[0].value;
+    if (pwd1 === pwd2) {
+      if (pwd1 === window.localStorage.getItem("password")) {
+        $.ajax({
+          url: "{:url('Admin/updateAdminPwd')}",
+          type: 'POST',
+          dataType: 'json',
+          data: {
+            userId: window.localStorage.getItem("userid"),
+            pwd: pwd2,
+            expwd: pwdEx
+          },
+          success: (res) => {
+            console.log(res);
+            alert(res);
+          }
+        });
+      } else {
+        alert("新密码与旧密码相同");
+        $("#pwd-update-1").val("");
+        $("#pwd-update-1")[0].focus();
+        $("#pwd-update-2").val("");
+      }
+    } else {
+      alert("新密码与再次输入的密码不相同");
+      $("#pwd-update-1").val("");
+      $("#pwd-update-1")[0].focus();
+      $("#pwd-update-2").val("");
+    }
+  }
+</script>
+
+<!--TODO:检查手机号是否重复-->
+<script>
+  let tel = [];
+  $.ajax({
+    url: "{:url('Admin/checkTel')}",
+    type: 'POST',
+    dataType: 'json',
+    success: (res) => {
+      tel = eval(res);
+    }
+  });
+  function checkTel() {
+    let tele = $("#update-tel")[0].value;
+    if (tele !== "") {
+      if (tel.includes(tele)) {
+        $("#tick-update").removeClass("fade").addClass("fade in");
+      } else {
+        $("#tick-update").removeClass("fade in").addClass("fade");
+        alert("手机号已经被注册，不能使用");
+        $("#input_tel").val("");
+      }
+    }
+  }
+  $("#update-tel").blur(() => {
+    checkTel();
+  });
+</script>
+</body>
+</html>

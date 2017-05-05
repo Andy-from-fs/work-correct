@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>注册</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <link href="__CSS__\blue.css" rel="stylesheet">
+  <style>
+    .radio_identity {
+      margin-left: 30px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1>
+          用户注册
+        </h1>
+        <p>
+          赶紧填写自己相关信息，注册使用系统。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="row clearfix">
+    <div class="col-md-6 column">
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="input_tel" class="col-sm-2 control-label">手机号
+          </label>
+          <div class="col-sm-10">
+            <input type="tel" class="form-control" id="input_tel"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="input_name" class="col-sm-2 control-label">用户名称</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="input_name"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <div class="col-sm-6"><input type="radio" name="identity" value="1"
+                                         class="radio_identity iradio_flat-blue"><span
+              class="span_identity">教师</span></div>
+            <div class="col-sm-6"><input type="radio" name="identity" value="2"
+                                         class="radio_identity iradio_flat-blue"><span
+              class="span_identity">学生</span></div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-6 column">
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="input_password1" class="col-sm-2 control-label">密码</label>
+          <div class="col-sm-10">
+            <input type="password" class="form-control" id="input_password1"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="input_password2" class="col-sm-2 control-label">再输一次</label>
+          <div class="col-sm-10">
+            <input type="password" class="form-control" id="input_password2"/>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button class="btn btn-success btn-lg" id="register">注册</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<!--注册功能-->
+<script>
+  $("#register").click(function () {
+
+
+    if ($('#input_password1')[0].value == $('#input_password2')[0].value) {
+      var formdata = new FormData();
+      formdata.append('username', $('#input_name')[0].value);
+      formdata.append('telephone', $('#input_tel')[0].value);
+      formdata.append('password', $('#input_password2')[0].value);
+      if ($('input:radio[name="identity"]:checked').val() == 2) {
+        formdata.append('identity', '学生');
+      }
+      if ($('input:radio[name="identity"]:checked').val() == 1) {
+        formdata.append('identity', '教师');
+      }
+      if ($('input:radio[name="identity"]:checked').val() == null) {
+        alert("请选择用户身份。");
+      }
+      $.ajax({
+        url: "{:url('Admin/add')}",
+        type: "POST",
+        dataType: "json",
+        data: formdata,
+        async: false,
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function (res) {
+          var result = eval(res);
+          status = result.status;
+          message = result.message;
+          localStorage.setItem('userid', result.userid);
+          localStorage.setItem('identity', result.identity);
+          parent.afterloginchange(result.identity, result.username);
+        },
+        error: function (XMLResponse) {
+          alert(XMLResponse.responseText);
+        }
+      });
+    } else {
+      alert("密码不相同");
+    }
+
+
+  });
+  
+</script>
+
+<!--TODO:检查手机号是否重复-->
+<script>
+  let tel = [];
+  $.ajax({
+    url: "{:url('Admin/checkTel')}",
+    type: 'POST',
+    dataType: 'json',
+    success: (res) => {
+      tel = eval(res);
+    }
+  });
+  function checkTel() {
+    let tele = $("#input_tel")[0].value;
+    if (tele !== "") {
+      if (tel.includes(tele)) {
+        alert("手机号能使用");
+      }else {
+        alert("手机号已经被注册，不能使用");
+        $("#input_tel").val("");
+      }
+    }
+  }
+  $("#input_tel").blur(()=> {
+    checkTel();
+  });
+</script>
+
+</body>
+</html>

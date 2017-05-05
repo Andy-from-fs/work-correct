@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>我的作业</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <link href="__icomoon__\style.css" rel="stylesheet">
+  <style>
+    .panel-body {
+      color: #313131;
+    }
+
+    label {
+      height: 34px;
+    }
+
+    .flexbox {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+
+    .panel-heading {
+      line-height: 34px;
+    }
+
+    .panel-title {
+      font-size: 1.2rem;
+    }
+
+    .tick {
+      width: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1>
+          我的作业
+        </h1>
+        <p class="firstLineIndent">
+        </p>
+      </div>
+      <!--列表块-->
+      <div id="list">
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!--TODO:学生查询作业页面-加载作业-->
+<script>
+  this.onload = () => {
+    $.ajax({
+      url: "{:url('work/queryWorkForStu')}",
+      type: 'POST',
+      dataType: 'json',
+//      data: {studentId: 4},
+      data: {teacherId: localStorage.getItem('userid')},
+      async: false,
+      success: (res) => {
+        res = eval(res);
+        console.log(res);
+        //TODO: 课程手风琴切换表
+        for (let i = 0; i < res.work.length; i++) {
+          $('#list').append('\
+      <div>\
+      <div class="panel-group" id=panelGroup-"' + res.work[i].workid + '">\
+        <div class="panel panel-default">\
+            <div class="panel-heading">\
+                <span class="icon-checkmark tick" id="icon-' + res.work[i].workid + '"></span>\
+                <a class="panel-title collapsed" data-toggle="collapse" data-parent="panelCourse"\
+                    href="#panelElement' + res.work[i].workid + '" id="heading_' + res.work[i].workid + '">' + res.work[i].workname + '</a>\
+            </div>\
+            <div  class="panel-collapse collapse" id="panelElement' + res.work[i].workid + '">\
+                <div class="panel-body ">\
+                    <div class="row clearfix">\
+                        <div class="col-sm-12 flexbox column">\
+                            <label class="">作业名称:</label>\
+                            <p class="col-sm-10" id="className_' + res.work[i].workid + '" >' + res.work[i].workname + '</p>\
+                        </div>\
+                        <div class="col-sm-12 flexbox column">\
+                            <label class="">作业内容:</label>\
+                            <p class="col-sm-10" id="content_' + res.work[i].workid + '">' + res.work[i].content + '</p>\
+                        </div>\
+                        <div class="col-sm-12 flexbox column">\
+                        <a \
+                          class="btn btn-link" \
+                          id="btn-download-answer' + res.work[i].workid + '" \
+                          href="http://www.work.com/work/work/downloadAnswer?id=' + res.work[i].workid + '" \
+                          download="' + res.work[i].answername + res.work[i].answerextension + '"\
+                          >下载答案</a>\
+                        <a\
+                          class="btn btn-success"\
+                          id="btn-tofinishorupdatework'+ res.work[i].workid  +'"\
+                          onclick="toFinish(' + res.work[i].workid + ')">\
+                        完成或修改作业</a>  \
+                        </div>\
+                        </div>\
+                    </div>\
+                </div>\
+            </div>\
+        </div>\
+      </div>\
+      </div>\
+      ');
+          if (!hasCorrected(res.work[i].workid, res.worktostudent[i])) {
+            $("#btn-download-answer" + res.work[i].workid).attr("disabled", true);
+          }
+          if (!hasFinished(res.work[i].workid, res.worktostudent[i])) {
+            $("#icon-" + res.work[i].workid).hide();
+          }
+        }
+
+      }
+    });
+  }
+</script>
+
+<!--TODO:判断是否完成,是否能下载答案,是否批改-->
+<script>
+  function hasFinished(workid, worktostudent) {
+    if (workid === worktostudent.workid) {
+      if (worktostudent.document === null) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      console.log(workid);
+      console.log(worktostudent.workid);
+      return false;
+    }
+  }
+  function hasCorrected(workid, worktostudent) {
+    if (workid === worktostudent.workid) {
+      if (worktostudent.grade === null) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      alert("Work中的ID与worktostudent的ID不等")
+      return false;
+    }
+  }
+</script>
+
+<!--TODO:跳转到写作业-->
+<script>
+  function toFinish(workId) {
+    this.location.href="http://www.work.com/worktostudent/worktostudent/view_finishWorkForStu?workId="+workId;
+  }
+</script>
+</body>
+</html>

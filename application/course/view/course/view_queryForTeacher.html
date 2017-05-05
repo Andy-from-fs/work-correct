@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>我的课程</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <link href="__CSS__\blue.css" rel="stylesheet">
+  <style>
+
+    .panel-body {
+      color: #313131;
+    }
+
+    label {
+      height: 34px;
+    }
+
+    #txtAreaUpdate {
+      height: 100px;
+    }
+
+    .flexbox {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+
+    .panel-heading {
+      line-height: 34px;
+    }
+
+    .panel-title {
+      font-size: 1.2rem;
+    }
+
+    .btn-delCourse {
+      float: right;
+    }
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+<script type="text/javascript" src="__JS__\icheck.min.js"></script>
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1>
+          我的课程
+        </h1>
+        <p class="firstLineIndent">
+        </p>
+      </div>
+      <!--列表块-->
+      <div id="list">
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!--TODO:修改课程信息modal框html-->
+<div class=" modal fade" id="modal-updata-course"
+     role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title black" id="UpdateCourseModalLabel">
+          修改课程信息
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="row clearfix">
+          <div class="col-sm-12 flexbox">
+            <label class="black col-sm-3">课程名:</label>
+            <input class="col-sm-11 form-control black" type="text" id="modalInputClassName">
+          </div>
+          <div class="col-sm-12 flexbox">
+            <label class="black col-sm-3">课程介绍:</label>
+            <textarea class="col-sm-11 form-control black" id="txtAreaUpdate"></textarea>
+          </div>
+        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="modalCourseBtnCancel">关闭</button>
+        <button type="button" class="btn btn-primary" id="modalCourseSave">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:增加学生modal框html-->
+<div class=" modal fade" id="modal-add-students"
+     role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title black" id="myModalLabel">
+          修改课程信息
+        </h4>
+      </div>
+      <div class="modal-body">
+        <table class="table black">
+          <thead>
+          <tr>
+            <th>编号</th>
+            <th>学生名称</th>
+            <th>手机</th>
+          </tr>
+          </thead>
+          <tbody id="tbody_addStudent">
+
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="modalStudentBtnCancel">关闭</button>
+        <button type="button" class="btn btn-primary" id="modalStudentAdd" onclick="addstudents()">增加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:加载班级-->
+<script>
+  let courses;
+  let addStudentCourseid;
+  function getcourseId(courseId) {
+    addStudentCourseid = courseId;
+  }
+
+
+  this.onload = () => {
+    $.ajax({
+      url: "{:url('course/queryCourseFortea')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {teacherid: localStorage.getItem('userid')},
+      async: false,
+      success: (res) => {
+        courses = eval(res);
+        console.log(courses);
+        //TODO: 课程手风琴切换表
+        for (let i = 0; i < courses.length; i++) {
+          $('#list').append('\
+      <div>\
+      <div class="panel-group" id="panelGroup-' + courses[i].courseid + '">\
+        <div class="panel panel-default">\
+            <div class="panel-heading">\
+                <a class="panel-title collapsed" data-toggle="collapse" data-parent="panelCourse"\
+                    href="#panelElement' + courses[i].courseid + '" id="heading_' + courses[i].courseid + '">' + courses[i].classname + '</a>\
+                <a class="btn btn-danger btn-delCourse" type="button" onclick="delCourse(' + courses[i].courseid + ')">删除课程</a>\
+            </div>\
+            <div  class="panel-collapse collapse" id="panelElement' + courses[i].courseid + '">\
+                <div class="panel-body ">\
+                    <div class="row clearfix">\
+                        <div class="col-sm-12 flexbox">\
+                            <label class="">课程名:</label>\
+                            <p class="col-sm-10" id="className_' + courses[i].courseid + '" >' + courses[i].classname + '</p>\
+                        </div>\
+                        <div class="col-sm-12 flexbox">\
+                            <label class="">课程介绍:</label>\
+                            <p class="col-sm-10" id="introduce_' + courses[i].courseid + '">' + courses[i].introduce + '</p>\
+                        </div>\
+                        <div>\
+                          <div class="col-md-12 column">\
+                            <div class="btn-group">\
+                            <a onclick=showstudent(' + courses[i].courseid + ')\
+                               id="a-sh' + courses[i].courseid + '"\
+                               class="btn btn-default" \
+                               >查看课程内学生</a>\
+                            <a onclick="hidestudent(' + courses[i].courseid + ')"\
+                                id="a-hi' + courses[i].courseid + '"\
+                                class="btn btn-default" \
+                               >隐藏学生列表</a>\
+                            <a class="btn btn-default" \
+                              href="#modal-updata-course" \
+                              data-toggle="modal" \
+                              onclick=callModalChangeCourse(' + courses[i].courseid + ')\
+                              role="button">修改课程信息</a>\
+                            </div>\
+                            <div id="table' + courses[i].courseid + '" class="fade">\
+                            <table class="table" id="table_' + courses[i].courseid + '">\
+                              <thead>\
+                                <tr>\
+                                  <th>编号</th>\
+                                  <th>学生名称</th>\
+                                  <th>手机</th>\
+                                </tr>\
+                              </thead>\
+                              <tbody id="tbody' + courses[i].courseid + '">\
+                              \
+                              </tbody>\
+                            </table>\
+                            <div class="col-md-12 column">\
+                              <button \
+                                class="btn btn-success" \
+                                role="button" \
+                                data-toggle="modal" \
+                                href="#modal-add-students" \
+                                onclick="addViewLoadStudents(' + courses[i].courseid + ')">添加学生</button>\
+                              <button class="btn btn-danger" onclick="btn_delStu(' + courses[i].courseid + ')">删除学生</button>\
+                            </div>\
+                            </div>\
+                          </div>\
+                        </div>\
+                    </div>\
+                </div>\
+            </div>\
+        </div>\
+      </div>\
+      </div>\
+      ');
+          $('#table' + courses[i].courseid).hide();
+          loadstudents(courses[i].courseid);
+        }
+
+      }
+    });
+  }
+</script>
+
+<!--TODO:加载学生-->
+<script>
+  function btn_addStudent(courseId) {
+    getcourseId(courseId);
+
+  }
+  function loadstudents(courseid) {
+    $.ajax({
+      url: "{:url('course/loadStudents')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {courseId: courseid},
+      async: false,
+      success: (res) => {
+        let result = eval(res);
+//        console.log(result);
+        for (let i = 0; i < result.length; i++) {
+          $('#tbody' + courseid).append('\
+          <tr>\
+            <td>' + result[i][0].userid + '</td>\
+            <td>' + result[i][0].username + '</td>\
+            <td>' + result[i][0].telephone + '</td>\
+            <td><input type="checkbox" value="' + result[i][0].userid + '" name="chb-delstudent"></td>>\
+          </tr>\
+      ');
+        }
+      }
+    })
+  };
+  //TODO:教师查询课程页面-隐藏学生方法
+  function hidestudent(courseid) {
+    $('#table' + courseid).removeClass('fade in').addClass('fade');
+    setTimeout(() => {
+      $('#table' + courseid).hide();
+    }, 300);
+  }
+  //TODO:教师查询课程页面-显示学生方法
+  function showstudent(courseid) {
+    $('#table' + courseid).show().removeClass('fade').addClass('fade in');
+  }
+  //获取未添加的学生，显示在添加学生modal视图
+  function addViewLoadStudents(courseId) {
+    getcourseId(courseId);
+    $("#tbody_addStudent").empty();
+    $.ajax({
+      url: "{:url('course/queryStudentsExpectAdded')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {courseId: courseId},
+      async: false,
+      success: (res) => {
+        const students = eval(res);
+        console.log(students);
+        for (let i = 0; i < students.length; i++) {
+          $("#tbody_addStudent").append('\
+          <tr id="trAddStudent_"' + students[i].userid + '>\
+            <td>' + students[i].userid + '</td>\
+            <td>' + students[i].username + '</td>\
+            <td>' + students[i].telephone + '</td>\
+            <td><input \
+                  type="checkbox" \
+                  value="' + students[i].userid + '" \
+                  name="chb-addstudent">\
+            </td>\
+          </tr>\
+          ');
+        }
+        ;
+      }
+    })
+  }
+</script>
+
+<!--TODO:修改课程基本信息-->
+<script>
+  function callModalChangeCourse(courseId) {
+    let className = $("#className_" + courseId).text();
+    let introduce = $("#introduce_" + courseId).text();
+    setTimeout(() => {
+      $('#modalInputClassName').val(className).focus();
+      $('#txtAreaUpdate').html(introduce);
+      $('#modalCourseSave').click(() => {
+        saveUpdate(courseId)
+      });
+    }, 200);
+  }
+  function saveUpdate(courseId) {
+    const className = $('#modalInputClassName')[0].value;
+    const introduce = $('#txtAreaUpdate')[0].value;
+    ajaxSaveUpdate(courseId, className, introduce);
+  }
+  function ajaxSaveUpdate(courseId, className, introduce) {
+    $.ajax({
+      url: "{:url('course/updateCourse')}",
+      type: 'POST',
+      dataType: 'json',
+      async: false,
+      data: {
+        courseid: courseId,
+        classname: className,
+        introduce: introduce
+      },
+      success: (res) => {
+        res = eval(res);
+//        console.log(res);
+        if (res.result) {
+          alert(res.message);
+          $("#className_" + courseId).html(className);
+          $("#introduce_" + courseId).html(introduce);
+          $("#heading_" + courseId).html(className);
+          $('#modalCourseBtnCancel').trigger('click');
+        } else {
+          alert(res.message);
+        }
+      }
+    });
+  }
+</script>
+
+<!--TODO:增加学生-->
+<script>
+  function addstudents() {
+    let addStudentsId = [];
+    const chbStu = document.getElementsByName("chb-addstudent");
+    for (i in chbStu) {
+      if (chbStu[i].checked)
+        addStudentsId.push(chbStu[i].value);
+    }
+    console.log(addStudentsId + "||" + addStudentCourseid);
+    const formData = new FormData;
+    formData.append("addStudentsId", addStudentsId);
+    formData.append("courseId", addStudentCourseid);
+    $.ajax({
+      url: "{:url('course/addStudents')}",
+      type: 'POST',
+      dataType: 'json',
+      async: false,
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false,
+      success: (res) => {
+        if (eval(res).length > 0) {
+          alert("成功添加了" + eval(res).length + "条数据");
+          $('#modalStudentBtnCancel').trigger('click');
+          setTimeout(this.location.reload(true), 1000);
+//          for (let i = 0; i < result.length; i++) {
+//            $('#tbody' + courseid).append('\
+//                <tr>\
+//                  <td>' + result[i][0].userid + '</td>\
+//                  <td>' + result[i][0].username + '</td>\
+//                  <td>' + result[i][0].telephone + '</td>\
+//                  <td><input type="checkbox" value="' + result[i][0].userid + '" name="chb-delstudent"></td>>\
+//                </tr>\
+//            ');
+//          }
+        } else {
+          alert("被选择的学生添加到课程内");
+        }
+      }
+    });
+  }
+</script>
+
+<!--TODO:删除学生-->
+<script>
+  function btn_delStu(courseId) {
+    let delStudentsId = [];
+    const chbDelStu = document.getElementsByName("chb-delstudent");
+    for (i in chbDelStu) {
+      if (chbDelStu[i].checked)
+        delStudentsId.push(chbDelStu[i].value);
+    }
+    if (delStudentsId.length > 0) {
+      $.ajax({
+        url: "{:url('course/delStu')}",
+        type: 'POST',
+        dataType: 'json',
+        async: false,
+        data: {delStuId: delStudentsId, courseId: courseId},
+        success: (res) => {
+          alert("删除" + res + "条数据");
+          setTimeout(this.location.reload(true), 500);
+        }
+      });
+    } else {
+      alert("请选择删除学生");
+    }
+  }
+
+</script>
+
+<!--TODO:删除课程-->
+<script>
+  function delCourse(courseId) {
+    $.ajax({
+      url: "{:url('course/delCourse')}",
+      type: 'POST',
+      dataType: 'json',
+      async: false,
+      data: {courseId: courseId},
+      success: (res) => {
+        res = eval(res);
+        $("#panelGroup-" + courseId).addClass("fade");
+        setInterval(() => {
+          $("#panelGroup-" + courseId).remove();
+        }, 400);
+        if (res.state == 1) {
+          alert("删除成功,共修改了" + (res.number) + "条数据");
+          $("#panelGroup-"+courseId).addClass("fade");
+          setTimeout(()=>{
+            $("#panelGroup-"+courseId).remove();
+          },400);
+        } else if (res.state == 0) {
+          alert("删除失败");
+        }else {
+          alert("数据传输出错")
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

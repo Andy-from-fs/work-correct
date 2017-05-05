@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>批改作业</title>
+
+  <style>
+    .black {
+      color: #333;
+      font-family: 微软雅黑;
+    }
+
+    .flexbox {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+
+    label {
+      text-align: right;
+      line-height: 39px;
+    }
+
+    .btn-group {
+      margin-bottom: 10px;
+    }
+
+    .p-show {
+      line-height: 39px;
+      text-align: left;
+    }
+
+    textarea {
+      min-height: 100px;
+    }
+
+    .tick {
+      width: 1.2rem;
+    }
+  </style>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <link href="__icomoon__\style.css" rel="stylesheet">
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1 id="workTitle">
+          批改作业
+        </h1>
+        <p>
+          教师下载未批改的作业，批改完成后上传作业，填写分数与评语。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div id="list">
+
+  </div>
+</div>
+
+
+<!--TODO:修改批改学生作业的评语成绩与上传批改后的作业-->
+<script>
+  function finishUpload(workToStuId) {
+    alert(workToStuId);
+    let formData = new FormData;
+    formData.append("workToStuId", workToStuId);
+    formData.append("message", $("#message-" + workToStuId)[0].value);
+    formData.append("grade", $("#grade-" + workToStuId)[0].value);
+    if ($("#document-" + workToStuId)[0].files[0] === null) {
+      formData.append("hasDocument", false);
+    } else {
+      formData.append("hasDocument", true);
+      formData.append("document", $("#document-" + workToStuId)[0].files[0]);
+      formData.append("documentName", $.getFileName_2("#document-" + workToStuId)[0]['filename']);
+      formData.append("documentExtension", $.getFileName_2("#document-" + workToStuId)[0]['fileExtension']);
+    }
+    $.ajax({
+      url: "{:url('worktostudent/correctWork')}",
+      cache: false,
+      data: formData,
+      type: 'POST',
+      processData: false,
+      contentType: false,
+      dataType: 'json',
+      success: (res) => {
+        res = eval(res);
+        console.log(res);
+        if (res.isUpdate === false) {
+          $("#btn-finish-"+workToStuId).addClass("fade");
+          $("#tick-" + workToStuId).addClass("fade").show();
+          setTimeout(()=>{
+            $("#btn-finish-"+workToStuId).text("上传修改批改情况");
+            $("#btn-finish-"+workToStuId).removeClass("fade").addClass("fade in");
+            $("#tick-" + workToStuId).removeClass("fade").addClass("fade in");
+          },400)
+        }
+      }
+    });
+  }
+</script>
+
+<!--TODO:加载每位学生的作业-->
+<script>
+  const workId = $.getUrlParam("workId");
+  $.ajax({
+    url:"{:url('worktostudent/queryWorkByWorkId')}",
+    type:"POST",
+    dataType:"json",
+    data:{workId:workId},
+    success:(res)=>{
+      res=eval(res);
+      $("#workTitle").text("批改作业:"+res.workname);
+    }
+  });
+  $.ajax({
+    url: "{:url('worktostudent/queryWorktostudentAndStudentByWorkId')}",
+    type: 'POST',
+    dataType: 'json',
+    data: {workId: workId},
+    success: (res) => {
+      res = eval(res);
+      let workToStudent = res.workToStudent;
+      let students = res.students;
+      for (let i = 0; i < students.length; i++) {
+        $("#list").append('\
+        <div class="panel-group" id="panel-' + workToStudent[i].worktostuid + '">\
+          <div class="panel panel-default">\
+            <div class="panel-heading">\
+              <span class="icon-checklist tick" id="tick-' + workToStudent[i].worktostuid + '"></span>\
+              <a class="panel-title collapsed"\
+                data-toggle="collapse"\
+                data-parent="#panel-' + workToStudent[i].worktostuid + '"\
+                id="head-' + workToStudent[i].worktostuid + '" \
+                href="#panel-element-' + workToStudent[i].worktostuid + '">学生名</a>\
+            </div>\
+            <div id="panel-element-' + workToStudent[i].worktostuid + '" class="panel-collapse collapse">\
+              <div class="panel-body ">\
+                <div class="row clearfix" id="has-finished' + workToStudent[i].worktostuid + '">\
+                  <div class="column col-md-12" >\
+                    <div class="btn-group">\
+                      <a class="btn btn-primary" id="download-homework-' + workToStudent[i].worktostuid + '">下载作业</a>\
+                      <a class="btn btn-success" id="btn-finish-'+workToStudent[i].worktostuid+'" onclick="finishUpload(' + workToStudent[i].worktostuid + ')">上传批改</a>\
+                    </div>\
+                  </div>\
+                  <div class="column col-md-12 flexbox black">\
+                    <label class="col-sm-2">批改后文件:</label>\
+                    <input class="col-sm-10 form-control p-show " id="document-' + workToStudent[i].worktostuid + '" type="file" style="margin-bottom: 5px">\
+                  </div>\
+                  <div class="column col-md-12 flexbox black">\
+                    <label class="col-sm-2">成绩:</label>\
+                    <input class="col-sm-10 p-show form-control" id="grade-' + workToStudent[i].worktostuid + '">\
+                  </div>\
+                  <div class="column col-md-12 flexbox black">\
+                    <label class="col-sm-2" for="message-">评语:</label>\
+                    <textarea class="txtarea-message form-control p-show" id="message-' + workToStudent[i].worktostuid + '"></textarea>\
+                  </div>\
+                </div>\
+                <div class="row clearfix black" id="has-not-finished' + workToStudent[i].worktostuid + '">\
+                  <div class="column col-md-12">\
+                    <h3>该同学未完成作业</h3>\
+                  </div>\
+                </div>\
+              </div>\
+             </div>\
+          </div>\
+        </div>\
+        ');
+        $("#head-" + workToStudent[i].worktostuid).html(students[i].username);
+        if (workToStudent[i].document === null) {
+          $("#has-finished" + workToStudent[i].worktostuid).hide();
+        } else {
+          $("#has-not-finished" + workToStudent[i].worktostuid).hide();
+          $("#download-homework-" + workToStudent[i].worktostuid)
+            .attr("href", "http://www.work.com/worktostudent/worktostudent/downloadDocument?id=" + workToStudent[i].worktostuid)
+            .attr("download", workToStudent[i].documentname + workToStudent[i].documentextension);
+        }
+        if (workToStudent[i].grade === null) {
+          $("#tick-" + workToStudent[i].worktostuid).hide();
+        } else {
+          $("#grade-" + workToStudent[i].worktostuid).val(workToStudent[i].grade);
+          $("#message-" + workToStudent[i].worktostuid).text(workToStudent[i].message);
+          $("#btn-finish-"+workToStudent[i].worktostuid).text("上传修改批改情况");
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

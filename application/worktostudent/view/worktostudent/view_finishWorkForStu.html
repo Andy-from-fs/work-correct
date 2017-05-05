@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>写作业</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <style>
+    h3 {
+      text-align: center;
+    }
+
+    .btn-totop {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .float-left {
+      float: left;
+    }
+
+    #has-finished div {
+      text-align: left;
+    }
+
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1 id="heading">
+          标题
+        </h1>
+        <p id="content">
+          内容
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="row clearfix">
+
+    <div class="col-md-8 column">
+      <form class="form-horizontal" role="form">
+        <div class="form-group col-md-12 control-label" id="has-not-finished">
+          <div class="col-sm-12">
+            <h3 class="float-left">
+              上存完成的作业文档
+            </h3>
+          </div>
+          <div class="col-sm-12 control-label">
+            <input type="file" class="form-control" id="input_work"/>
+          </div>
+          <div class="col-sm-12 btn-totop">
+            <a class="btn btn-lg btn-success " id="but_finish">完成上传</a>
+          </div>
+        </div>
+        <div class="form-group col-md-12 control-label" id="has-finished">
+          <div id="has-corrected">
+            <div class="col-sm-12">
+              <h3 class="float-left">
+                老师批改情况
+              </h3>
+            </div>
+            <div class="col-sm-12 control-label ">
+              <p id="p-message">评语：发动机看来撒娇分开了的撒</p>
+              <p id="p-grade">成绩：48</p>
+            </div>
+          </div>
+          <div id="has-not-corrected" class="form-group col-md-12 control-label">
+            <div class="col-sm-12 control-label clearfix">
+              <h2 class="float-left">作业未批改</h2>
+            </div>
+            <div class="col-sm-12 control-label">
+              <input type="file" class="form-control" id="input-update-work"/>
+            </div>
+            <div class="col-sm-12 btn-totop control-label " style="text-align: center">
+              <a class="btn btn-lg btn-primary " id="but-update">修改上传</a>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="col-md-4 column" id="download-answer">
+      <h3>
+        下载作业答案
+      </h3>
+      <a type="button" class="btn btn-block btn-lg btn-primary" id="btn-download-answer">下载</a>
+      <h3>下载批改后的作业</h3>
+      <a type="button" class="btn btn-block btn-lg btn-success" id="btn-download-work" >下载</a>
+    </div>
+  </div>
+</div>
+
+<!--TODO:学生作业详细情况-判断作业是否完成-是否批改-填充作业信息内容进入视图-->
+<script>
+  let Storage = window.localStorage;
+
+  function isCorrected(isFinished, bool) {
+    if (isFinished) {
+      $("#has-not-finished").hide();
+      if (bool) {
+        $("#has-not-corrected").hide();
+        return true;
+      } else {
+        $("#has-corrected").hide();
+        $("#download-answer").hide();
+        return false;
+      }
+    } else {
+      $("#has-corrected").hide();
+      $("#has-finished").hide();
+      $("#download-answer").hide();
+      return null;
+    }
+  }
+  const workId = $.getUrlParam("workId");
+  let workToStuId;
+  this.onload = () => {
+    $.ajax({
+      url: "{:url('worktostudent/queryWorktostudentByWorkIdAndStudentId')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        studentId: Storage.getItem('userid'),
+        workId: workId
+      },
+      success: (res) => {
+        res = eval(res)[0];
+        console.log(res);
+        isCorrected((res.document !== null), (res.grade !== null));
+        workToStuId = res.worktostuid;
+        console.log(res.message);
+        console.log(res.grade);
+        $("#p-message").html("评语：" + res.message);
+        $("#p-grade").html("成绩：" + res.grade);
+        $('#btn-download-work')
+          .attr("href", "http://www.work.com/worktostudent/worktostudent/downloadDocument?id=" +res.worktostuid)
+          .attr("download", res.documentname + res.documentextension);
+      }
+    });
+    $.ajax({
+      url: "{:url('worktostudent/queryWorkByWorkId')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {workId: workId},
+      success: (res) => {
+        res = eval(res);
+        $('#heading').html(res.workname);
+        $('#content').html(res.content);
+        $('#btn-download-answer')
+          .attr("href", ("http://www.work.com/work/work/downloadAnswer?id=" + workId))
+          .attr('download', res.answername + res.answerextension);
+       
+      }
+    });
+  };
+</script>
+
+<!--TODO：学生作业详细情况-上传作业-更新上传作业-->
+<script>
+  //上传作业
+  $("#but_finish").click(() => {
+    alert(workToStuId);
+    let formData = new FormData;
+    formData.append('workToStuId', workToStuId);
+    formData.append('document', $("#input_work")[0].files[0]);
+    formData.append("documentName", $.getFileName_2("#input_work")[0]['filename']);
+    formData.append("documentExtension", $.getFileName_2("#input_work")[0]['fileExtension']);
+    $.ajax({
+      url: "{:url('worktostudent/finishWork_Upload')}",
+      type: 'POST',
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      success: function (res) {
+        res = eval(res);
+        alert(res.message);
+        $("#has-not-finished").addClass("fade");
+        setTimeout(() => {
+          $("#has-not-finished").hide();
+          $("#has-finished").show().removeClass("fade").addClass("fade in");
+        }, 400);
+
+      }
+    });
+  });
+
+  //更新上传作业
+  $("#but-update").click(() => {
+    let formData = new FormData;
+    formData.append('workToStuId', workToStuId);
+    formData.append('document', $("#input-update-work")[0].files[0]);
+    formData.append("documentName", $.getFileName_2("#input-update-work")[0]['filename']);
+    formData.append("documentExtension", $.getFileName_2("#input-update-work")[0]['fileExtension']);
+    $.ajax({
+      url: "{:url('worktostudent/UpdateWork_Upload')}",
+      type: 'POST',
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      success: function (res) {
+        alert(res);
+      }
+    });
+  });
+</script>
+</body>
+</html>

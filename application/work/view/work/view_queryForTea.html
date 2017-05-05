@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>我的作业</title>
+  <link href="__BSCSS__\bootstrap.css" rel="stylesheet">
+  <style>
+    .panel-body {
+      color: #313131;
+    }
+    
+    #txtAreaUpdate {
+      height: 100px;
+    }
+    
+    label {
+      height: 34px;
+    }
+    
+    .flexbox {
+      display: flex;
+      flex-flow: row nowrap;
+    }
+    
+    .panel-heading {
+      line-height: 34px;
+    }
+    
+    .panel-title {
+      font-size: 1.2rem;
+    }
+    
+    .btn-delWork {
+      float: right;
+    }
+  
+  </style>
+</head>
+<body>
+<script type="text/javascript" src="__JS__\jquery-3.1.1.js"></script>
+<script type="text/javascript" src="__BSJS__\bootstrap.min.js"></script>
+
+<!--主体-->
+<div class="container">
+  <div class="row clearfix">
+    <div class="col-md-12 column">
+      <div class="jumbotron well">
+        <h1>
+          我的作业
+        </h1>
+        <p class="firstLineIndent">
+        </p>
+      </div>
+      <!--列表块-->
+      <div id="list">
+      </div>
+      <div id="answer-download-div" style="display: none">
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!--TODO:教师查询作业页面-修改作业信息的modal框html-->
+<div class=" modal fade" id="modal-update-work"
+     role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="clearModalChangeWork()">×
+        </button>
+        <h4 class="modal-title black" id="UpdateCourseModalLabel">
+          修改作业信息
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="row clearfix">
+          <div class="col-sm-12 flexbox">
+            <label class="black col-sm-3">作业名称:</label>
+            <input class="col-sm-11 form-control black" type="text" id="modalInputWorkName">
+          </div>
+          <div class="col-sm-12 flexbox">
+            <label class="black col-sm-3">作业答案:</label>
+            <input class="col-sm-11 form-control black" id="answerUpdate" type="file">
+          </div>
+          <div class="col-sm-12 flexbox">
+            <label class="black col-sm-3">作业内容:</label>
+            <textarea class="col-sm-11 form-control black" id="contentUpdate"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info" id="modelAnswerSave">更改答案</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="modalCourseBtnCancel"
+                onclick="clearModalChangeWork()">关闭
+        </button>
+        <button type="button" class="btn btn-primary" id="modalWorkSave">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--TODO:教师查询作业页面-加载作业-->
+<script>
+  this.onload = () => {
+    $.ajax({
+      url: "{:url('work/queryWorkForTea')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {teacherId: localStorage.getItem('userid')},
+      async: false,
+      success: (res) => {
+        res = eval(res);
+        console.log(res);
+        //TODO: 课程手风琴切换表
+        for (let i = 0; i < res.length; i++) {
+          $('#list').append('\
+      <div>\
+      <div class="panel-group" id="panelGroup-' + res[i].workid + '">\
+        <div class="panel panel-default">\
+            <div class="panel-heading">\
+                <a class="panel-title collapsed" \
+                   data-toggle="collapse" \
+                   data-parent="panelCourse"\
+                   href="#panelElement' + res[i].workid + '"\
+                   id="heading_' + res[i].workid + '">' + res[i].workname + '</a>\
+                 <a class="btn btn-danger btn-delWork" \
+                    type="button" \
+                    onclick="delWork(' + res[i].workid + ')">删除作业</a>\
+            </div>\
+            <div  class="panel-collapse collapse" id="panelElement' + res[i].workid + '">\
+                <div class="panel-body ">\
+                    <div class="row clearfix">\
+                        <div class="col-sm-12 flexbox column">\
+                            <label class="">作业名称:</label>\
+                            <p class="col-sm-10" id="workName_' + res[i].workid + '" >' + res[i].workname + '</p>\
+                        </div>\
+                        <div class="col-sm-12 flexbox column">\
+                            <label class="">作业内容:</label>\
+                            <p class="col-sm-10" id="content_' + res[i].workid + '">' + res[i].content + '</p>\
+                        </div>\
+                        <div class="col-sm-12 flexbox column">\
+                          <div class="btn-group">\
+                            <button \
+                              class="btn btn-info" \
+                              id="btn-Updata' + res[i].workid + '"\
+                              data-toggle="modal" \
+                              href="#modal-update-work"\
+                              onclick="callModalChangeWork(' + res[i].workid + ')" \
+                              >修改作业信息</button>\
+                            <button \
+                              class="btn btn-success fade in" \
+                              id="btn-show' + res[i].workid + '"\
+                              onclick="btnShow(' + res[i].workid + ')"\
+                              >显示学生作业情况</button>\
+                            <button \
+                              class="btn btn-warning fade" \
+                              id="btn-hide' + res[i].workid + '"\
+                              onclick="btnHide(' + res[i].workid + ')">隐藏学生作业情况</button>\
+                            <a \
+                              class="btn btn-primary" \
+                              id="btn-download-answer' + res[i].workid + '" \
+                              onclick="btnDownloadAnswer(' + res[i].workid + ')" \
+                              >下载答案</a>\
+                            <button\
+                              class="btn btn-success" \
+                              onclick="toCorrect(' + res[i].workid + ')"\
+                              id="btn-toCorrect-' + res[i].workid + '" \
+                              >批改作业</button>  \
+                           </div> \
+                        </div>\
+                        <div class="col-sm-12 column">\
+                          <div id="table' + res[i].workid + '" class="fade">\
+                            <table class="table">\
+                              <thead>\
+                                <tr>\
+                                  <th>编号</th>\
+                                  <th>学生名称</th>\
+                                  <th>电话</th>\
+                                  <th>是否完成</th>\
+                                  <th>是否批改</th>\
+                                </tr>\
+                              </thead>\
+                              <tbody id="tbody_' + res[i].workid + '">\
+                              \
+                              </tbody>\
+                            </table>\
+                          </div>\
+                        </div>\
+                    </div>\
+                </div>\
+            </div>\
+        </div>\
+      </div>\
+      </div>\
+      ');
+          loadStuForTea(res[i].workid);
+          $("#table" + res[i].workid).hide();
+          $("#btn-hide" + res[i].workid).hide();
+        }
+
+      }
+    });
+  }
+</script>
+
+<!--TODO:教师查询作业页面-加载学生完成作业情况-->
+<script>
+  function loadStuForTea(workId) {
+    $.ajax({
+      url: "{:url('work/loadStuForTea')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {workId: workId},
+      async: true,
+      success: (res) => {
+        res = eval(res);
+        console.log(res);
+        for (let i = 0; i < res.length; i++) {
+          if (res[i].document != null) {
+            if (res[i].grade != null) {
+              $("#tbody_" + workId).append('\
+            <tr>\
+              <td>' + res[i].studentid + '</td>\
+              <td>' + res[i].name + '</td>\
+              <td>' + res[i].telephone + '</td>\
+              <td>' + 已完成 + '</td>\
+              <td>' + 已批改 + '</td>\
+            </tr>\
+            ')
+            } else {
+              $("#tbody_" + workId).append('\
+            <tr class="can-click" onclick="correctWork(workId,res[i].studentid)">\
+              <td>' + res[i].studentid + '</td>\
+              <td>' + res[i].name + '</td>\
+              <td>' + res[i].telephone + '</td>\
+              <td>' + 已完成 + '</td>\
+              <td>' + 未批改 + '</td>\
+            </tr>\
+            ');
+            }
+          } else {
+            $("#tbody_" + workId).append('\
+            <tr>\
+              <td>' + res[i].studentid + '</td>\
+              <td>' + res[i].name + '</td>\
+              <td>' + res[i].telephone + '</td>\
+              <td>未完成</td>\
+              <td>--</td>>\
+            </tr>\
+            ')
+          }
+        }
+      }
+    });
+  }
+</script>
+
+<!--TODO:教师查询作业页面-显示隐藏学生完成作业情况按钮onclick -->
+<script>
+  function btnShow(workId) {
+    $("#table" + workId).show().removeClass("fade").addClass("fade in active");
+    setTimeout(() => {
+      setTimeout(() => {
+        $("#btn-show" + workId).hide();
+      }, 300);
+      $("#btn-show" + workId).removeClass("fade in active").addClass("fade");
+      setTimeout(() => {
+        $("#btn-hide" + workId).show().removeClass("fade").addClass("fade in active");
+      }, 300);
+    }, 200);
+  }
+  function btnHide(workId) {
+    $("#table" + workId).removeClass("fade in").addClass("fade");
+    setTimeout(() => {
+      $("#table" + workId).hide();
+    }, 300);
+    setTimeout(() => {
+      $("#btn-hide" + workId).removeClass("fade in active").addClass("fade");
+      setTimeout(() => {
+        $("#btn-hide" + workId).hide();
+      }, 300);
+      setTimeout(() => {
+        $("#btn-show" + workId).show().removeClass("fade").addClass("fade in");
+      }, 300);
+    }, 200);
+  }
+</script>
+
+<!--TODO:教师查询作业页面-跳转至作业详细情况页面-->
+<script>
+  function toCorrect(workId) {
+    this.location.href = "http://www.work.com/worktostudent/worktostudent/view_correctWorkForTea" +
+      "?workId=" + workId;
+  }
+</script>
+
+<!--TODO:教师查询作业页面-跳转至作业批改页面-->
+<script>
+  function correctWork(workId, studentId) {
+    this.location.href = "http://www.work.com/worktostudent/worktostudent/view_correctWorkForTea" +
+      "?workid=" + workId + "studentid=" + studentId;
+  }
+</script>
+
+<!--TODO:教师查询作业页面-修改作业信息modal -->
+<script>
+  //把原值添加进入modal
+  function callModalChangeWork(workId) {
+    let workName = $("#workName_" + workId).text();
+    let content = $("#content_" + workId).text();
+    setTimeout(() => {
+      $("#modalInputWorkName").val(workName).focus();
+      $("#contentUpdate").html(content);
+      $('#modalWorkSave').click(() => {
+        saveWorkUpdate(workId);
+      });
+      $('#modelAnswerSave').click(() => {
+        updateAnswer(workId);
+      });
+    }, 200)
+  }
+  //退出modal清空modal内容
+  function clearModalChangeWork() {
+    $("#contentUpdate").html("");
+    $("#modalInputWorkName").val("");
+    $("#answerUpdate").after($("#answerUpdate").clone().val(""));
+    $("#answerUpdate").remove();
+    $("#modalWorkSave").unbind("click");
+    $("#modelAnswerSave").unbind("click");
+  }
+
+  //更新基本信息方法
+  function saveWorkUpdate(workId) {
+    const workName = $("#modalInputWorkName")[0].value;
+    const content = $("#contentUpdate")[0].value;
+    $.ajax({
+      url: "{:url('work/updateWork')}",
+      type: 'POST',
+      dataType: 'json',
+      async: false,
+      data: {
+        workId: workId,
+        workName: workName,
+        content: content,
+      },
+      success: (res) => {
+        res = eval(res);
+        if (res.result) {
+          alert(res.message);
+          $("#workName_" + workId).html(workName);
+          $("#content_" + workId).html(content);
+          $("#heading_" + workId).html(workName);
+          $('#modalCourseBtnCancel').trigger('click');
+        } else {
+          alert(res.message);
+        }
+      }
+    })
+  }
+
+  //更新答案
+  function updateAnswer(wordId) {
+    var formData = new FormData();
+    formData.append('wordId', wordId);
+    formData.append('answer', $("#answerUpdate")[0].files[0]);
+    formData.append("answerName", $.getFileName_2("#answerUpdate")[0]['filename']);
+    formData.append("answerExtension", $.getFileName_2("#answerUpdate")[0]['fileExtension']);
+
+    $.ajax({
+      url: "{:url('work/answerUpdate')}",
+      type: 'POST',
+      data: formData,
+      async: false,
+      cache: false,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      success: function (res) {
+        alert(res);
+      }
+    })
+  }
+</script>
+
+<!--TODO:教师查询作业页面-删除作业操作（按钮实现）-->
+<script>
+  function delWork(workId) {
+    $.ajax({
+      url: "{:url('work/delWork')}",
+      type: 'POST',
+      dataType: 'json',
+      async: false,
+      data: {workId: workId},
+      success: (res) => {
+        res = eval(res);
+        console.log(res);
+        if (res.state == 1) {
+          alert("删除成功,共修改了" + (res.number) + "条数据,删除文件" + (res.delFile) + "个文件");
+        } else if (res.state == 0) {
+          alert("删除失败");
+        } else {
+          alert("数据传输出错")
+        }
+        $("#panelGroup-" + workId).addClass("fade");
+        setInterval(() => {
+          $("#panelGroup-" + workId).remove();
+        }, 400)
+      }
+    });
+  }
+</script>
+
+
+<script>
+
+  function btnDownloadAnswer(workId) {
+    $.ajax({
+      url: "{:url('work/queryAnswerNameExtension')}",
+      type: 'POST',
+      dataType: 'json',
+      data: {workId: workId},
+      success: (res) => {
+        res=eval(res);
+        $("#answer-download-div").empty().append('\
+          <a \
+            id="download-url"\
+            href="http://www.work.com/work/work/downloadAnswer?id=' + workId + '" \
+            download="' + res.answerName + res.answerExtension + '"\
+          >答案下载链接</a>\
+        ');
+        document.getElementById("download-url").click();
+      }
+    });
+    
+  }
+</script>
+</body>
+</html>
